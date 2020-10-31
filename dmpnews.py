@@ -13,7 +13,7 @@ import requests
 newspaper_base_url = 'https://dmpnews.org'
 newspaper_archive_base_url = 'https://dmpnews.org'
 
-start_date = date(2020, 10, 26)
+start_date = date(2020, 10, 31)
 end_date = date.today()
 delta = end_date - start_date
 output_result = []
