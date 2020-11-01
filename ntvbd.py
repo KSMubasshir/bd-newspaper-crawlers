@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# encoding=utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import os
 import json
 import time
@@ -6,9 +11,10 @@ from bs4 import BeautifulSoup
 import requests
 
 newspaper_base_url = 'https://www.ntvbd.com'
-newspaper_archive_base_url = 'https://www.ntvbd.com/archive/'
+newspaper_archive_base_url = 'https://www.ntvbd.com/archive'
 
-start_date = date(2015, 1, 28)
+#start_date = date(2020, 6, 1)
+start_date = date(2019, 10, 26)
 end_date = date.today()
 delta = end_date - start_date
 output_result = []
@@ -18,9 +24,10 @@ exceptions = 0
 for i in range(delta.days + 1):
     date_str = start_date + timedelta(days=i)
     print(date_str)
-    index = 0
+    with open("log.txt", 'a') as file:
+        file.write(str(date_str) + '\n')
     output_dir = './{}/{}/{}/bn'.format(date_str.year, date_str.month,date_str.day)
-    raw_output_dir = '../'+ "Raw" + '/' + "ntvbd" + '/' + output_dir
+    raw_output_dir = './'+ "Raw" + '/' +  output_dir
     try:
         os.makedirs(output_dir)
     except OSError:
@@ -30,15 +37,14 @@ for i in range(delta.days + 1):
     except OSError:
         pass
 
-    index = index + 1
-    url = newspaper_archive_base_url + str(date_str.year) + "/" + str(date_str.month) + "/" + str(date_str.day)
+    url = newspaper_archive_base_url + "/" + str(date_str.year) + "/" + str(date_str.month) + "/" + str(date_str.day)
     try:
+        print(url)
         archive_soup =  requests.get(url)
     except:
         print("No response for links in archive,trying to reconnect")
         time.sleep(2)
         continue
-    print(url)
     soup = BeautifulSoup(archive_soup.content, "html.parser")
 
     all_links = soup.find_all("a")
@@ -48,66 +54,55 @@ for i in range(delta.days + 1):
         break
     else:
         for link in all_links:
-            try :
-                article_url = link.get('href')
-                link_separator = article_url.split('/')
-            except :
+            try:
+                link_separator = link.get('href').split('/')
+            except:
                 continue
             if len(link_separator) != 4 :
-                continue 
-            if link_separator[2].isnumeric() == False :
                 continue
-            
-            output_file_name = link_separator[1] + "_" + link_separator[2]
-            article_url = newspaper_base_url + article_url
-            print(article_url)
-
+            if "ntvbd.com" in link_separator[2] or "facebook.com" in link_separator[2] or "twitter.com" in link_separator[2]:
+                continue
+            link = "/" + link_separator[1] + "/" + link_separator[2] + "/" + link_separator[3]
+            output_file_name = 'bn_{}{}.txt'.format(link_separator[1],link_separator[2])
+            article_url = newspaper_base_url + link
             try:
                 article_data = requests.get(article_url).text
             except:
                 print("No response for content in link,trying to reconnect")
                 time.sleep(2)
                 continue
-
             with open(raw_output_dir + '/' + output_file_name, 'w') as file:
-                file.write(article_data.encode('utf-8'))
-            
+                    file.write(str(article_url) + '\n' + str(article_data) )
             article_soup = BeautifulSoup(article_data, "html.parser")
-
-            paragraphs = article_soup.find_all("p")
-
-            title = article_soup.find("meta",{"property":"og:title"}).get('content')
+            
+            print(article_url)
+            
             try:
-                author =  article_soup.find("strong",{"class":"color-black"}).get_text()
-            except:
+                author = article_soup.find("div", {"class": "author-section pt-20 clearfix"}).get_text().strip()
+            except Exception as e: 
+                print(e)
                 author = ""
 
             try:
-                date =  article_soup.find("div",{"class":"date color-gray"}).get_text()
+                date_published = article_soup.find("div", {"class": "date color-gray"}).get_text().strip()
             except:
-                date = ""
+                date_published = ""
 
-            length = len(paragraphs)
-            length = length - 1
-
-            i = 0
-
-            article_content = ""
-            for paragraph in paragraphs: 
-                if i <= length - 5 :
-                    article_content += paragraph.get_text() + "\n"
-                else :
-                    pass
-                i = i + 1
-            
-            
+            try:
+                article_title_text = article_soup.find("h1", {"itemprop": "headline"}).get_text()
+            except:
+                article_title_text = "" 
+            try:
+                article_body_text = article_soup.find("div", {"class": "section-content pl-30 pr-30 pb-20 text-justify"}).get_text().strip()
+            except:
+                article_body_text = ""
 
             data  =  "<article>\n"
-            data +=  "<title>"       + title            + "</title>\n"
-            data +=  "<date>"        + date             + "</date>\n"
-            data +=  "<author>"      + author           + "</author>\n"
-            data +=  "<text>\n"      + article_content  + "</text>\n"
+            data +=  "<title>"      + article_title_text                            + "</title>\n"
+            data +=  "<date>"       + date_published                                + "</date>\n"
+            data +=  "<author>"     + author                                        + "</author>\n"
+            data +=  "<text>"+ "\n" + article_body_text                      + "\n" + "</text>\n"
             data +=  "</article>"
 
             with open(output_dir+ '/' + output_file_name, 'w') as file:
-                file.write(data.encode('utf-8'))
+                file.write(data + '\n\n')
