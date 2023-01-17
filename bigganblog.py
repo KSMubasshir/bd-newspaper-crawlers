@@ -6,6 +6,35 @@ from bs4 import BeautifulSoup
 import requests
 
 
+def month_converter(month):
+    if month == "জানুয়ারী":
+        month = 1
+    elif month == "ফেব্রুয়ারী":
+        month = 2
+    elif month == "মার্চ":
+        month = 3
+    elif month == "এপ্রিল":
+        month = 4
+    elif month == "মে":
+        month = 5
+    elif month == "জুন":
+        month = 6
+    elif month == "জুলাই":
+        month = 7
+    elif month == "আগস্ট":
+        month = 8
+    elif month == "সেপ্টেম্বর":
+        month = 9
+    elif month == "অক্টোবর":
+        month = 10
+    elif month == "নভেম্বর":
+        month = 11
+    else:
+        month = 12
+
+    return month
+
+
 def date_translator(bn_number):
     en_number = ""
     for letter in bn_number:
@@ -33,16 +62,18 @@ def date_translator(bn_number):
     return en_number
 
 
-newspaper_base_url = 'https://www.amrabondhu.com'
+newspaper_base_url = 'https://bigganblog.org/'
 
-for index in range(421):
-    url = newspaper_base_url + "/node?page=" + str(index)
+for index in range(1, 65):
+    url = newspaper_base_url + "page/" + str(index)
+
     try:
         print(url)
         archive_soup = requests.get(url)
     except:
         print("No response for links in archive,passing")
         continue
+
     soup = BeautifulSoup(archive_soup.content, "html.parser")
 
     all_links = soup.find_all("a")
@@ -53,13 +84,12 @@ for index in range(421):
     else:
         for link in all_links:
             link_separator = link.get('href')
-
             try:
                 link_tokens = link_separator.split("/")
             except:
                 continue
-            if len(link_tokens) == 3 and link_tokens[2].isnumeric():
-                article_url = newspaper_base_url + link_separator
+            if len(link_tokens) == 7 and "bigganblog.org" in link_tokens[2]:
+                article_url = link_separator
             else:
                 continue
 
@@ -74,34 +104,34 @@ for index in range(421):
             article_soup = BeautifulSoup(article_data, "html.parser")
 
             try:
-                date = article_soup.find("div", {"class": "art-PostHeaderIcons art-metadata-icons"}).get_text().strip()
-                date = date.split("|")[1].split("-")[0].strip()
-            except:
-                date = "০১/০১/২০০০"
-            try:
-                title = article_soup.find("title").get_text().split("|")[0].strip()
+                title = article_soup.find("h1", {"class": "entry-title"}).get_text()
             except:
                 title = ""
             try:
-                article_content = article_soup.find("div", {"class": "art-article"}).get_text().strip()
+                article_content = ""
+                paragraphs = article_soup.find("div", {"class": "entry-content"})
+                paragraphs = paragraphs.find_all("p")
+                for paragraph in paragraphs:
+                    if "তথ্যসূত্রঃ" in paragraph.get_text() or "এরকম আরো লেখা" in paragraph.get_text():
+                        break
+                    article_content += paragraph.get_text() + "\n"
             except:
                 article_content = ""
             try:
-                author = article_soup.find("a", {"title": "View user profile."}).get_text().strip()
+                author = article_soup.find("span", {"class": "author vcard"}).get_text()
             except:
                 author = ""
 
             data = "<article>\n"
             data += "<title>" + title + "</title>\n"
-            data += "<date>" + date + "</date>\n"
             data += "<author>" + author + "</author>\n"
             data += "<text>\n" + article_content + "\n</text>\n"
             data += "</article>"
 
-            output_file_name = link_tokens[1] + "_" + link_tokens[2]
+            output_file_name = link_tokens[5]
 
             output_dir = './Data'
-            raw_output_dir = "./Raw"
+            raw_output_dir = './' + "Raw/"
 
             try:
                 os.makedirs(output_dir)
