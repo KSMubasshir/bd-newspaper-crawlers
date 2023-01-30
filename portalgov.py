@@ -1,6 +1,8 @@
 # - * -coding: utf - 8 - * -
-  # encoding = utf8
+# encoding = utf8
 import sys
+from importlib import reload
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 import json
@@ -13,10 +15,10 @@ import os
 from datetime import date, timedelta
 import time
 
-
 link_set = set()
-visited = set() 
+visited = set()
 count = 0
+
 
 def loadLinks():
     global link_set
@@ -26,11 +28,12 @@ def loadLinks():
             visited = set(file2)
             link_set = set(file1).difference(file2)
 
-def extract_data(article_soup,output_file_name):
+
+def extract_data(article_soup, output_file_name):
     try:
         article_content = ""
-        paragraphs = article_soup.find_all("p",{"style":"text-align:justify"})
-        listitems = article_soup.find_all("li",{"style":"text-align:justify"})
+        paragraphs = article_soup.find_all("p", {"style": "text-align:justify"})
+        listitems = article_soup.find_all("li", {"style": "text-align:justify"})
         for para in paragraphs:
             article_content += para.get_text().strip() + "\n"
         for li in listitems:
@@ -41,7 +44,6 @@ def extract_data(article_soup,output_file_name):
     data = "<article>\n"
     data += "<text>\n" + article_content + "\n</text>\n"
     data += "</article>"
-
 
     output_dir = './Data/'
     raw_output_dir = './' + "Raw" + '/'
@@ -61,9 +63,9 @@ def extract_data(article_soup,output_file_name):
     except Exception as e:
         print(e)
         pass
-    
-    if(len(paragraphs)==0 and len(listitems)==0):
-	    return
+
+    if len(paragraphs) == 0 and len(listitems) == 0:
+        return
     try:
         with open(output_dir + '/' + str(output_file_name), 'w') as file:
             file.write(data)
@@ -71,24 +73,25 @@ def extract_data(article_soup,output_file_name):
         print(e)
         pass
 
+
 def start():
     base_url = 'http://dae.gov.bd'
     try:
         print(base_url)
-        article_soup =  requests.get(base_url)
+        article_soup = requests.get(base_url)
         soup = BeautifulSoup(article_soup.content, "html.parser")
         visited.add(base_url)
-        with open("visited.txt","a") as visited_file:
+        with open("visited.txt", "a") as visited_file:
             visited_file.write(base_url + "\n")
-    except Exception as e :
+    except Exception as e:
         print(e)
         exit()
 
     all_links = soup.find_all("a")
 
-    if (len(all_links) == 0):
+    if len(all_links) == 0:
         exit()
-    else :
+    else:
         for link in all_links:
             lnk = link.get('href')
             if lnk.startswith("/site"):
@@ -97,15 +100,16 @@ def start():
                 pass
             else:
                 continue
-            link_set.add( lnk  )
-            with open("all.txt","a") as all_file:
-                all_file.write( lnk + "\n")
+            link_set.add(lnk)
+            with open("all.txt", "a") as all_file:
+                all_file.write(lnk + "\n")
 
     restart()
 
+
 def restart():
     global link_set
-    while len(link_set) > 0 :
+    while len(link_set) > 0:
         global count
         url = link_set.pop()
         if url.startswith("/site"):
@@ -115,30 +119,29 @@ def restart():
         else:
             continue
         visited.add(url)
-        with open("visited.txt","a") as visited_file:
-            visited_file.write( url + "\n")
-        soup =  requests.get(url)
+        with open("visited.txt", "a") as visited_file:
+            visited_file.write(url + "\n")
+        soup = requests.get(url)
 
         article_soup = BeautifulSoup(soup.content, "html.parser")
 
         print(url)
-        extract_data(article_soup,count)
+        extract_data(article_soup, count)
         count = count + 1
         new_links = article_soup.find_all("a")
-        if (len(new_links) == 0):
+        if len(new_links) == 0:
             pass
-        else :
+        else:
             for full_link in new_links:
                 link = full_link.get('href')
                 if link in visited:
                     continue
-                link_set.add( link )
-                with open("all.txt","a") as all_file:
-                    all_file.write( link + "\n")
+                link_set.add(link)
+                with open("all.txt", "a") as all_file:
+                    all_file.write(link + "\n")
 
-    
+
 if __name__ == '__main__':
-    #start()
+    # start()
     loadLinks()
     restart()
-    

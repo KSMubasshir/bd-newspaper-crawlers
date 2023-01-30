@@ -12,17 +12,19 @@ from random import uniform
 from selenium import webdriver
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary 
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
-#from io import open
+
+
+# from io import open
 
 def renew_tor_ip():
-    with Controller.from_port(port = 9051) as controller:
+    with Controller.from_port(port=9051) as controller:
         controller.authenticate(password="abhik")
         controller.signal(Signal.NEWNYM)
 
@@ -36,7 +38,7 @@ def getData(link, session=None):
     time.sleep(9)
 
     while True:
-        try: 
+        try:
             session.get(link)
         except Exception as e:
             print(e)
@@ -56,6 +58,7 @@ def getData(link, session=None):
         else:
             return session
 
+
 newspaper_base_url = 'http://onnodristy.com/'
 
 output_result = []
@@ -64,37 +67,37 @@ exceptions = 0
 
 session = None
 
-for index in range( 5927 ):
-    for j in range( 12 ):
-        if j == 0 :
+for index in range(5927):
+    for j in range(12):
+        if j == 0:
             url = newspaper_base_url + "category/বাংলাদেশ/জাতীয়/page/" + str(index)
-        elif j == 1 :
+        elif j == 1:
             url = newspaper_base_url + "category/বাংলাদেশ/রাজনীতি/page/" + str(index)
-        elif j == 2 :
+        elif j == 2:
             url = newspaper_base_url + "category/বাংলাদেশ/অর্থনীতি/page/" + str(index)
-        elif j == 3 :
+        elif j == 3:
             url = newspaper_base_url + "category/বাংলাদেশ/সারাদেশ/" + str(index)
-        elif j == 4 :
+        elif j == 4:
             url = newspaper_base_url + "category/আন্তর্জাতিক/page/" + str(index)
-        elif j == 5 :
+        elif j == 5:
             url = newspaper_base_url + "category/শিক্ষা-সংবাদ/page/" + str(index)
-        elif j == 6 :
+        elif j == 6:
             url = newspaper_base_url + "category/ক্যাম্পাস/page/" + str(index)
-        elif j == 7 :
+        elif j == 7:
             url = newspaper_base_url + "category/অন্য-স্কুল/page/" + str(index)
-        elif j == 8 :
+        elif j == 8:
             url = newspaper_base_url + "category/চাকরি/page/" + str(index)
-        elif j == 9 :
+        elif j == 9:
             url = newspaper_base_url + "category/খেলাধুলা/page/" + str(index)
-        elif j == 10 :
+        elif j == 10:
             url = newspaper_base_url + "category/শিল্প-সাহিত্য/page/" + str(index)
-        elif j == 11 :
+        elif j == 11:
             url = newspaper_base_url + "category/বিনোদন/page/" + str(index)
 
         print(url)
 
         try:
-            session =  getData(url, session)
+            session = getData(url, session)
         except:
             print("No response for links in archive,trying to reconnect")
             time.sleep(2)
@@ -102,19 +105,18 @@ for index in range( 5927 ):
 
         soup = BeautifulSoup(session.page_source, "html.parser")
 
-        with open(output_dir+ '/' + output_file_name, 'w', encoding='utf8') as file:
+        with open(output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
             file.write(str(soup))
         exit()
-        
+
         all_links = soup.find_all("a", attrs={"class": "title"})
         page_links_length = len(all_links)
 
-        if(page_links_length == 0):
+        if (page_links_length == 0):
             break
         else:
             for link in all_links:
                 link_separator = link.get('href')
-                
 
                 link = "https://www.kalerkantho.com" + link_separator[1:]
                 article_url = link
@@ -124,12 +126,12 @@ for index in range( 5927 ):
                 year = link_tokens[3]
                 month = link_tokens[4]
                 day = link_tokens[5]
-                
-                output_file_name = link_tokens[2] + "_" + link_tokens[3] + "_" + link_tokens[4] + "_" + link_tokens[5] + "_" + link_tokens[6] 
+
+                output_file_name = link_tokens[2] + "_" + link_tokens[3] + "_" + link_tokens[4] + "_" + link_tokens[
+                    5] + "_" + link_tokens[6]
 
                 output_dir = './{}/{}/{}/bn'.format(year, month, day)
-                raw_output_dir = '../'+ "Raw" + '/' + "Kalerkantho" + '/' + output_dir
-
+                raw_output_dir = '../' + "Raw" + '/' + "Kalerkantho" + '/' + output_dir
 
                 try:
                     os.makedirs(output_dir)
@@ -156,22 +158,21 @@ for index in range( 5927 ):
                 i = 0
 
                 article_content = ""
-                for paragraph in paragraphs: 
-                    if i == 0 :
+                for paragraph in paragraphs:
+                    if i == 0:
                         date = paragraph.get_text().split("|")[2]
-                    elif i > 3 and i <= length - 2 :
-                        article_content +=  paragraph.get_text() + "\n"
+                    elif i > 3 and i <= length - 2:
+                        article_content += paragraph.get_text() + "\n"
                     else:
                         pass
                     i = i + 1
 
-                data  =  "<article>\n"
-                #data +=  "<title>" + title + "</title>\n"     
-                data +=  "<date>" + date + "</date>\n"
-                #data +=  "<author>" + author + "</author>\n"
-                data +=  "<text>" + article_content + "</text>\n"
-                data +=  "</article>"
+                data = "<article>\n"
+                # data +=  "<title>" + title + "</title>\n"
+                data += "<date>" + date + "</date>\n"
+                # data +=  "<author>" + author + "</author>\n"
+                data += "<text>" + article_content + "</text>\n"
+                data += "</article>"
 
-
-                with open(output_dir+ '/' + output_file_name, 'w', encoding='utf8') as file:
+                with open(output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
                     file.write(data)

@@ -5,44 +5,17 @@ from datetime import date, timedelta
 from bs4 import BeautifulSoup
 import requests
 
+base_url = 'http://shopnobaz.net/page/'
 
-def date_translator(bn_number):
-    en_number = ""
-    for letter in bn_number:
-        if letter == '০':
-            en_number += "0"
-        elif letter == '১':
-            en_number += "1"
-        elif letter == '২':
-            en_number += "2"
-        elif letter == '৩':
-            en_number += "3"
-        elif letter == '৪':
-            en_number += "4"
-        elif letter == '৫':
-            en_number += "5"
-        elif letter == '৬':
-            en_number += "6"
-        elif letter == '৭':
-            en_number += "7"
-        elif letter == '৮':
-            en_number += "8"
-        elif letter == '৯':
-            en_number += "9"
-
-    return en_number
-
-
-newspaper_base_url = 'https://www.techtunes.co/'
-
-for index in range(1, 1755):
-    url = newspaper_base_url + "page/" + str(index)
+for index in range(400, 1000):
+    url = base_url + str(index)
     try:
         print(url)
         archive_soup = requests.get(url)
     except:
         print("No response for links in archive,passing")
         continue
+
     soup = BeautifulSoup(archive_soup.content, "html.parser")
 
     all_links = soup.find_all("a")
@@ -53,12 +26,13 @@ for index in range(1, 1755):
     else:
         for link in all_links:
             link_separator = link.get('href')
-
             try:
                 link_tokens = link_separator.split("/")
             except:
                 continue
-            if len(link_tokens) == 6 and link_tokens[5].isnumeric():
+            if len(link_tokens) == 6:
+                if "respond" in link_tokens[5] or "comments" in link_tokens[5]:
+                    continue
                 article_url = link_separator
             else:
                 continue
@@ -74,21 +48,22 @@ for index in range(1, 1755):
             article_soup = BeautifulSoup(article_data, "html.parser")
 
             try:
-                article_content = ""
-                paragraphs = article_soup.find_all("p")
-                for p in paragraphs:
-                    article_content += p.get_text() + "\n"
+                title = article_soup.find("h1").get_text()
+            except:
+                title = ""
+            try:
+                article_content = article_soup.find("div", {"class": "entry-content clearfix"}).get_text()
             except:
                 article_content = ""
 
             data = "<article>\n"
+            data += "<title>" + title + "</title>\n"
             data += "<text>\n" + article_content + "\n</text>\n"
             data += "</article>"
 
             output_file_name = link_tokens[5]
-
-            output_dir = './Data'
-            raw_output_dir = "./Raw"
+            output_dir = "./ShonoBaz/"
+            raw_output_dir = './' + "Raw/" + output_dir
 
             try:
                 os.makedirs(output_dir)

@@ -20,15 +20,16 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 
+
 class CrawlerVoabangla(CrawlerBase):
     def __init__(self):
         super(CrawlerVoabangla, self).__init__('https://www.voabangla.com',
-                                         out_dir='voabangla',
-                                         session_class=TouchVPNSession,
-                                         **constants.TouchVPNSessionDefaults)
+                                               out_dir='voabangla',
+                                               session_class=TouchVPNSession,
+                                               **constants.TouchVPNSessionDefaults)
         self.blackList = set(['https://www.voabangla.com/search?q='])
 
-    def load_full_page(self, session, patience=1): 
+    def load_full_page(self, session, patience=1):
         scrolling_js = '''window.scrollTo(0, document.body.scrollHeight);'''
         height_js = '''var l=document.body.scrollHeight; return l;'''
         prev_height = -1
@@ -38,7 +39,7 @@ class CrawlerVoabangla(CrawlerBase):
         while True:
             session.session.execute_script(scrolling_js)
             time.sleep(1)
-            
+
             modal_button = EC.visibility_of_element_located(
                 (By.XPATH, "//div[@id='webPushModal']//button[@class='close']")
             )
@@ -64,15 +65,16 @@ class CrawlerVoabangla(CrawlerBase):
         output_fname = ''
 
         article_page = False
-        
-        if session.session.current_url.startswith('https://www.voabangla.com') and len(session.session.current_url.split("/")) == 6:
+
+        if session.session.current_url.startswith('https://www.voabangla.com') and len(
+                session.session.current_url.split("/")) == 6:
             article_page = True
             patience = 1
         else:
             patience = 2
-        
+
         self.load_full_page(session, patience)
-    
+
         soup = BeautifulSoup(session.session.page_source, 'html.parser')
         if session.session.current_url.startswith('https://www.voabangla.com'):
             links.add(session.session.current_url)
@@ -91,25 +93,24 @@ class CrawlerVoabangla(CrawlerBase):
 
         else:
             links.add('https://www.voabangla.com')
-        
-        
+
         if article_page:
-            soup = soup.find("div",{"id":"content"})
+            soup = soup.find("div", {"id": "content"})
             if soup:
 
-                title_element = soup.find("h1",{"class":"title pg-title"})
+                title_element = soup.find("h1", {"class": "title pg-title"})
                 if title_element:
                     title_text = title_element.get_text()
                 else:
                     title_text = ''
 
-                content_element = soup.find("div",{"id":"article-content"})
+                content_element = soup.find("div", {"id": "article-content"})
                 if content_element:
                     content_text = content_element.get_text()
                 else:
                     content_text = ''
 
-                if title_text and content_text:  
+                if title_text and content_text:
                     content = f'''
                     <article>
                     <title>{title_text}</title>
@@ -121,9 +122,10 @@ class CrawlerVoabangla(CrawlerBase):
                     encoded_link = unquote(session.session.current_url).encode('utf-8', errors='ignore')
                     h = hashlib.sha1()
                     h.update(encoded_link)
-                    output_fname = h.hexdigest()   
-        
+                    output_fname = h.hexdigest()
+
         return links, content, output_fname
+
 
 if __name__ == "__main__":
     crawler = CrawlerVoabangla()

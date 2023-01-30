@@ -8,8 +8,8 @@ import requests
 newspaper_base_url = 'http://www.prothom-alo.com/'
 newspaper_archive_base_url = 'http://www.prothom-alo.com/archive/'
 
-#start_date = date(2017, 10, 12)
-#end_date = date(2018, 9, 11)
+# start_date = date(2017, 10, 12)
+# end_date = date(2018, 9, 11)
 start_date = date(2018, 9, 12)
 end_date = date.today()
 delta = end_date - start_date
@@ -21,8 +21,8 @@ for i in range(delta.days + 1):
     date_str = start_date + timedelta(days=i)
     print(date_str)
     index = 0
-    output_dir = './{}/{}/{}/bn'.format(date_str.year, date_str.month,date_str.day)
-    raw_output_dir = '../'+ "Raw" + '/' + "Prothom_Alo.com" + '/' + output_dir
+    output_dir = './{}/{}/{}/bn'.format(date_str.year, date_str.month, date_str.day)
+    raw_output_dir = '../' + "Raw" + '/' + "Prothom_Alo.com" + '/' + output_dir
     try:
         os.makedirs(output_dir)
     except OSError:
@@ -32,11 +32,11 @@ for i in range(delta.days + 1):
     except OSError:
         pass
 
-    while(True):
+    while (True):
         index = index + 1
         url = newspaper_archive_base_url + str(date_str) + '?edition=all&page=' + str(index)
         try:
-            archive_soup =  requests.get(url)
+            archive_soup = requests.get(url)
         except:
             print("No response for links in archive,trying to reconnect")
             time.sleep(2)
@@ -45,13 +45,13 @@ for i in range(delta.days + 1):
         all_links = soup.find_all("a", attrs={"class": "link_overlay"})
         page_links_length = len(all_links)
 
-        if(page_links_length == 0):
+        if page_links_length == 0:
             break
         else:
             for link in all_links:
                 link_separator = link.get('href').split('/')
-                link = link_separator[1] + "/" +link_separator[2] + "/" + link_separator[3]
-                output_file_name = 'bn_{}{}.txt'.format(link_separator[2],link_separator[3])
+                link = link_separator[1] + "/" + link_separator[2] + "/" + link_separator[3]
+                output_file_name = 'bn_{}{}.txt'.format(link_separator[2], link_separator[3])
                 article_url = newspaper_base_url + link
                 try:
                     article_data = requests.get(article_url).text
@@ -60,11 +60,11 @@ for i in range(delta.days + 1):
                     time.sleep(2)
                     continue
                 with open(raw_output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
-                        file.write(str(article_url) + '\n' + str(article_data) )
+                    file.write(str(article_url) + '\n' + str(article_data))
                 article_soup = BeautifulSoup(article_data, "html.parser")
-                
+
                 print(article_url)
-                
+
                 try:
                     article_info = article_soup.find_all("div", {"class": "additional_info_container"})
                     author = article_soup.find("div", {"class": "author"}).find("span", {"class": "name"}).text
@@ -91,21 +91,21 @@ for i in range(delta.days + 1):
                 article_body = article_soup.find("div", {"itemprop": "articleBody"})
 
                 try:
-             	    article_title_text = str(article_title.text.strip())
+                    article_title_text = str(article_title.text.strip())
                 except:
-                    article_title_text = "" 
+                    article_title_text = ""
                 try:
                     article_body_text = article_body.get_text(separator="\n\n")
                 except:
                     article_body_text = ""
 
-                data  =  "<article>\n"
-                data +=  "<title>"      + article_title_text                            + "</title>\n"
-                data +=  "<date>"       + date_published                                + "</date>\n"
-                data +=  "<topic>"      + tag_array                                     + "</topic>\n"
-                data +=  "<author>"     + author                                        + "</author>\n"
-                data +=  "<text>"       + article_body_text                             + "</text>\n"
-                data +=  "</article>"
+                data = "<article>\n"
+                data += "<title>" + article_title_text + "</title>\n"
+                data += "<date>" + date_published + "</date>\n"
+                data += "<topic>" + tag_array + "</topic>\n"
+                data += "<author>" + author + "</author>\n"
+                data += "<text>" + article_body_text + "</text>\n"
+                data += "</article>"
 
-                with open(output_dir+ '/' + output_file_name, 'w', encoding='utf8') as file:
+                with open(output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
                     file.write(data + '\n\n')

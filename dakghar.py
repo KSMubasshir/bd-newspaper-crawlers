@@ -29,56 +29,55 @@ def date_translator(bn_number):
             en_number += "8"
         elif letter == '৯':
             en_number += "9"
-        
+
     return en_number
-   
+
+
 newspaper_base_url = 'https://www.dakghar24.com/'
 
-for index in range( 89 , 100 ):
-#for index in range( 165 , 200 ):
-    for j in range( 13 ):
-        if j == 0 :
+for index in range(89, 100):
+    # for index in range( 165 , 200 ):
+    for j in range(13):
+        if j == 0:
             url = newspaper_base_url + "our-home/page/" + str(index)
-        elif j == 1 :
+        elif j == 1:
             url = newspaper_base_url + "foreign-home/page/" + str(index)
-        elif j == 2 :
+        elif j == 2:
             url = newspaper_base_url + "game-home/page/" + str(index)
-        elif j == 3 :
+        elif j == 3:
             url = newspaper_base_url + "international-home/page/" + str(index)
-        elif j == 4 :
+        elif j == 4:
             url = newspaper_base_url + "politics-home/page/" + str(index)
-        elif j == 5 :
+        elif j == 5:
             url = newspaper_base_url + "entertainment-home/page/" + str(index)
-        elif j == 6 :
+        elif j == 6:
             url = newspaper_base_url + "education-home/page/" + str(index)
-        elif j == 7 :
+        elif j == 7:
             url = newspaper_base_url + "decor-home/page/" + str(index)
-        elif j == 8 :
+        elif j == 8:
             url = newspaper_base_url + "literary-home/page/" + str(index)
-        elif j == 9 :
+        elif j == 9:
             url = newspaper_base_url + "readers-home/page/" + str(index)
-        elif j == 10 :
+        elif j == 10:
             url = newspaper_base_url + "technology-home/page/" + str(index)
-        elif j == 11 :
+        elif j == 11:
             url = newspaper_base_url + "picture-home/page/" + str(index)
-        elif j == 12 :
+        elif j == 12:
             url = newspaper_base_url + "video-home/page/" + str(index)
 
         try:
             print(url)
-            archive_soup =  requests.get(url)
+            archive_soup = requests.get(url)
         except:
             print("No response for links in archive,passing")
             continue
 
         soup = BeautifulSoup(archive_soup.content, "html.parser")
 
-        
-
         all_links = soup.find_all("a")
         page_links_length = len(all_links)
 
-        if(page_links_length == 0):
+        if page_links_length == 0:
             break
         else:
             for link in all_links:
@@ -87,13 +86,13 @@ for index in range( 89 , 100 ):
                     link_tokens = link_separator.split("/")
                 except:
                     continue
-                if len( link_tokens) == 3 :
+                if len(link_tokens) == 3:
                     if "home" in link_tokens[1]:
                         continue
                     article_url = newspaper_base_url + link_tokens[1]
                 else:
                     continue
-                
+
                 try:
                     print(article_url)
                     article_data = requests.get(article_url).text
@@ -105,7 +104,7 @@ for index in range( 89 , 100 ):
                 article_soup = BeautifulSoup(article_data, "html.parser")
 
                 try:
-                    date = article_soup.find("div",{"class":"jeg_meta_date"}).get_text().strip()
+                    date = article_soup.find("div", {"class": "jeg_meta_date"}).get_text().strip()
                     date_tokens = date.split("/")
 
                     day = date_translator(date_tokens[0])
@@ -120,24 +119,22 @@ for index in range( 89 , 100 ):
                 try:
                     title = article_soup.find("title").get_text().split("|")[0].strip()
                 except:
-                    title=""
+                    title = ""
                 try:
-                    article_content = article_soup.find("div",{"class":"content-inner"}).get_text().strip()
+                    article_content = article_soup.find("div", {"class": "content-inner"}).get_text().strip()
                 except:
                     article_content = ""
                 try:
-                    author = article_soup.find("div",{"class":"jeg_meta_author"}).get_text().strip()
+                    author = article_soup.find("div", {"class": "jeg_meta_author"}).get_text().strip()
                 except:
                     author = ""
 
-                data  =  "<article>\n"
-                data +=  "<title>" + title + "</title>\n"     
-                data +=  "<date>" + date + "</date>\n"     
-                data +=  "<author>" + author + "</author>\n"     
-                data +=  "<text>\n" + article_content + "\n</text>\n"
-                data +=  "</article>"
-
-                
+                data = "<article>\n"
+                data += "<title>" + title + "</title>\n"
+                data += "<date>" + date + "</date>\n"
+                data += "<author>" + author + "</author>\n"
+                data += "<text>\n" + article_content + "\n</text>\n"
+                data += "</article>"
 
                 output_file_name = link_tokens[1]
 
@@ -152,15 +149,15 @@ for index in range( 89 , 100 ):
                     os.makedirs(raw_output_dir)
                 except OSError:
                     pass
-                
+
                 try:
-                    with open(raw_output_dir+ '/' + output_file_name, 'w', encoding = 'utf8') as file:
+                    with open(raw_output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
                         file.write(str(article_soup))
                 except:
                     pass
 
                 try:
-                    with open(output_dir+ '/' + output_file_name, 'w', encoding = 'utf8') as file:
+                    with open(output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
                         file.write(data)
                 except:
                     pass

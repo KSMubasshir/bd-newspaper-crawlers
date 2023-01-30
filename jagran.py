@@ -1,6 +1,8 @@
 # - * -coding: utf - 8 - * -
-  # encoding = utf8
+# encoding = utf8
 import sys
+from importlib import reload
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 import os
@@ -13,8 +15,8 @@ import requests
 
 newspaper_base_url = 'https://www.jagran.com'
 
-#for index in range(8000,8500):
-for index in range(8500,9000):
+# for index in range(8000,8500):
+for index in range(1, 9000):
     with open("log1.txt", "a") as logFile:
         logFile.write(str(index) + "\n")
 
@@ -32,18 +34,18 @@ for index in range(8500,9000):
     all_links = soup.find_all("a")
     page_links_length = len(all_links)
 
-    if (page_links_length == 0):
+    if page_links_length == 0:
         break
-    else :
+    else:
         for link in all_links:
             link_separator = link.get('href')
             try:
                 link_tokens = link_separator.split("/")
             except:
                 continue
-            if len(link_tokens) == 3 and  link_tokens[2].endswith(".html"):
+            if len(link_tokens) == 3 and link_tokens[2].endswith(".html"):
                 article_url = newspaper_base_url + link_separator
-            else :
+            else:
                 continue
 
             try:
@@ -57,12 +59,12 @@ for index in range(8500,9000):
             article_soup = BeautifulSoup(article_data, "html.parser")
 
             try:
-                title = article_soup.find("meta",{"name":"twitter:title"}).get('content').strip()
+                title = article_soup.find("meta", {"name": "twitter:title"}).get('content').strip()
             except:
                 title = ""
 
             try:
-                article_content = article_soup.find("div", {"class":"articleBody"}).get_text().strip()
+                article_content = article_soup.find("div", {"class": "articleBody"}).get_text().strip()
             except:
                 article_content = ""
 

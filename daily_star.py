@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from bs4 import BeautifulSoup
 import requests
 
+
 def date_translator(bn_number):
     en_number = ""
     for letter in bn_number:
@@ -28,82 +29,83 @@ def date_translator(bn_number):
             en_number += "8"
         elif letter == '৯':
             en_number += "9"
-        
+
     return en_number
-   
+
+
 def month_converter(month):
-    if month == "জানুয়ারী" :
-        month = 1 
-    elif month == "ফেব্রুয়ারী" :
+    if month == "জানুয়ারী":
+        month = 1
+    elif month == "ফেব্রুয়ারী":
         month = 2
-    elif month == "মার্চ" :
+    elif month == "মার্চ":
         month = 3
-    elif month == "এপ্রিল" :
+    elif month == "এপ্রিল":
         month = 4
-    elif month == "মে" :
+    elif month == "মে":
         month = 5
-    elif month == "জুন" :
+    elif month == "জুন":
         month = 6
-    elif month == "জুলাই" :
+    elif month == "জুলাই":
         month = 7
-    elif month == "আগস্ট" :
+    elif month == "আগস্ট":
         month = 8
-    elif month == "সেপ্টেম্বর" :
+    elif month == "সেপ্টেম্বর":
         month = 9
-    elif month == "অক্টোবর" :
+    elif month == "অক্টোবর":
         month = 10
-    elif month == "নভেম্বর" :
+    elif month == "নভেম্বর":
         month = 11
     else:
         month = 12
-    
+
     return month
+
 
 newspaper_base_url = 'https://www.thedailystar.net/bangla/'
 
-for index in range( 1051 ):
-    for j in range( 18 ):
-        if j == 0 :
+for index in range(1051):
+    for j in range(18):
+        if j == 0:
             url = newspaper_base_url + "শীর্ষ-খবর" + "?page=" + str(index)
-        if j == 1 :
+        if j == 1:
             url = newspaper_base_url + "মতামত" + "?page=" + str(index)
-        if j == 2 :
+        if j == 2:
             url = newspaper_base_url + "ফিরে-দেখা" + "?page=" + str(index)
-        if j == 3 :
+        if j == 3:
             url = newspaper_base_url + "খেলা" + "?page=" + str(index)
-        if j == 4 :
+        if j == 4:
             url = newspaper_base_url + "anandadhara/" + "চারদিক" + "?page=" + str(index)
-        if j == 5 :
+        if j == 5:
             url = newspaper_base_url + "anandadhara/" + "পেপার-কাটিং" + "?page=" + str(index)
-        if j == 6 :
+        if j == 6:
             url = newspaper_base_url + "anandadhara/" + "সিকোয়েন্স" + "?page=" + str(index)
-        if j == 7 :
+        if j == 7:
             url = newspaper_base_url + "anandadhara/" + "ফিচার" + "?page=" + str(index)
-        if j == 8 :
+        if j == 8:
             url = newspaper_base_url + "anandadhara/" + "ফ্যাশন" + "?page=" + str(index)
-        if j == 9 :
+        if j == 9:
             url = newspaper_base_url + "anandadhara/" + "ফিল্ম-রিভিউ" + "?page=" + str(index)
-        if j == 10 :
+        if j == 10:
             url = newspaper_base_url + "anandadhara/" + "সাক্ষাৎকার" + "?page=" + str(index)
-        if j == 11 :
+        if j == 11:
             url = newspaper_base_url + "anandadhara/" + "ভ্রমণ" + "?page=" + str(index)
-        if j == 12 :
+        if j == 12:
             url = newspaper_base_url + "anandadhara/" + "রান্না" + "?page=" + str(index)
-        if j == 13 :
+        if j == 13:
             url = newspaper_base_url + "anandadhara/" + "স্বাস্থ্য-ফিচার" + "?page=" + str(index)
-        if j == 14 :
+        if j == 14:
             url = newspaper_base_url + "anandadhara/" + "রূপচর্চা" + "?page=" + str(index)
-        if j == 15 :
+        if j == 15:
             url = newspaper_base_url + "anandadhara/" + "টিভি" + "?page=" + str(index)
-        if j == 16 :
+        if j == 16:
             url = newspaper_base_url + "anandadhara/" + "প্রযুক্তি" + "?page=" + str(index)
-        if j == 17 :
+        if j == 17:
             url = newspaper_base_url + "anandadhara/" + "ইন্টেরিয়র" + "?page=" + str(index)
-        
 
         try:
             print(url)
-            archive_soup =  requests.get(url)
+            archive_soup = requests.get(url)
         except:
             print("No response for links in archive,passing")
             continue
@@ -112,21 +114,21 @@ for index in range( 1051 ):
         all_links = soup.find_all("a")
         page_links_length = len(all_links)
 
-        if(page_links_length == 0):
+        if (page_links_length == 0):
             break
         else:
             for link in all_links:
                 link_separator = link.get('href')
-                
+
                 try:
                     link_tokens = link_separator.split("/")
                 except:
                     continue
-                if len( link_tokens) == 4 and link_tokens[1] == "bangla":
+                if len(link_tokens) == 4 and link_tokens[1] == "bangla":
                     article_url = newspaper_base_url + link_separator[8:]
                 else:
                     continue
-                
+
                 try:
                     print(article_url)
                     article_data = requests.get(article_url).text
@@ -140,10 +142,10 @@ for index in range( 1051 ):
                 try:
                     title = article_soup.find("title").get_text().split("|")[0].strip()
                 except:
-                    title=""
+                    title = ""
 
                 try:
-                    author = article_soup.find("div",{"class":"author-name margin-bottom-big"}).get_text().strip()
+                    author = article_soup.find("div", {"class": "author-name margin-bottom-big"}).get_text().strip()
                 except:
                     try:
                         candiadates = article_soup.find_all("a")
@@ -155,7 +157,7 @@ for index in range( 1051 ):
                         author = ""
 
                 try:
-                    date = article_soup.find("div",{"class":"small-text"}).get_text().split("/")[0].strip()
+                    date = article_soup.find("div", {"class": "small-text"}).get_text().split("/")[0].strip()
                     month_date = date.split(",")[1].strip()
                     day = month_date.split(" ")[1].strip()
                     month = month_date.split(" ")[0].strip()
@@ -168,30 +170,28 @@ for index in range( 1051 ):
                     year = date_translator(year)
 
                 except:
-                    date= "০১/০১/২০০০"
+                    date = "০১/০১/২০০০"
                     day = 1
                     month = 1
                     year = 2000
 
                 try:
-                    article_content = article_soup.find("div",{"class":"field-body view-mode-teaser"}).get_text().strip()
+                    article_content = article_soup.find("div",
+                                                        {"class": "field-body view-mode-teaser"}).get_text().strip()
                 except:
                     article_content = ""
 
-
-                data  =  "<article>\n"
-                data +=  "<title>" + title + "</title>\n"     
-                data +=  "<author>" + author + "</author>\n"     
-                data +=  "<date>" + date + "</date>\n"     
-                data +=  "<text>\n" + article_content + "\n</text>\n"
-                data +=  "</article>"
-
-                
+                data = "<article>\n"
+                data += "<title>" + title + "</title>\n"
+                data += "<author>" + author + "</author>\n"
+                data += "<date>" + date + "</date>\n"
+                data += "<text>\n" + article_content + "\n</text>\n"
+                data += "</article>"
 
                 output_file_name = link_tokens[3].split("-")[-1]
 
                 output_dir = './{}/{}/{}'.format(year, month, day)
-                raw_output_dir = './'+ "Raw/" + output_dir
+                raw_output_dir = './' + "Raw/" + output_dir
 
                 try:
                     os.makedirs(output_dir)
@@ -202,15 +202,14 @@ for index in range( 1051 ):
                 except OSError:
                     pass
 
-                
                 try:
-                    with open(raw_output_dir+ '/' + output_file_name, 'w', encoding = 'utf8') as file:
+                    with open(raw_output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
                         file.write(str(article_soup))
                 except:
                     pass
 
                 try:
-                    with open(output_dir+ '/' + output_file_name, 'w', encoding = 'utf8') as file:
+                    with open(output_dir + '/' + output_file_name, 'w', encoding='utf8') as file:
                         file.write(data)
                 except:
                     pass
